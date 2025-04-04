@@ -9,7 +9,7 @@
 </div>
 
 <p align="center">
-  <img src="https://github.com/yourusername/kubeai/raw/main/assets/dashboard-preview.png" alt="KubeAI Dashboard" width="800" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+  <img src="https://github.com/Awrsha/KubeAI-Kubernetes-with-AI-Analysis/blob/master/dashboard.png" alt="KubeAI Dashboard" width="800" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 </p>
 
 ## 🌟 Features
@@ -51,7 +51,7 @@ export HUGGINGFACE_TOKEN="your_huggingface_token"
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/kubeai.git
+git clone https://github.com/Awrsha/KubeAI-Kubernetes-with-AI-Analysis.git
 cd kubeai
 
 # Install dependencies
