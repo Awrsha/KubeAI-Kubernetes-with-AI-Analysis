@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KubeAI - Kubernetes with AI Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        primaryDark: '#5D5CDE',
+                        dark: {
+                            100: '#333333',
+                            200: '#222222',
+                            300: '#181818',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+        
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(75, 85, 99, 0.5);
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(75, 85, 99, 0.7);
+        }
+        
+        .transition-height {
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        /* Loading animation */
+        .loading-dot {
+            animation: loading 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes loading {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dark .card-hover:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-100 min-h-screen">
+    <!-- Dark mode detection script -->
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    
+    <!-- Navigation sidebar -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar for larger screens -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="flex flex-col w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-200">
+                <div class="flex items-center h-16 flex-shrink-0 px-4 bg-white dark:bg-dark-100 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xl">K</div>
+                        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">KubeAI</h1>
+                    </div>
+                </div>
+                <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
+                    <nav class="mt-5 flex-1 px-2 space-y-1">
+                        <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-white bg-primaryDark rounded-md group" aria-current="page">
+                            <svg class="mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Dashboard
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md group">
+                            <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Resources
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md group">
+                            <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Metrics
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md group">
+                            <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 w-0 overflow-hidden">
+            <!-- Top navigation -->
+            <div class="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-dark-100 shadow dark:border-b dark:border-gray-700">
+                <button type="button" id="sidebarButton" class="md:hidden px-4 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primaryDark">
+                    <span class="sr-only">Open sidebar</span>
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div class="flex-1 px-4 flex justify-between">
+                    <div class="flex-1 flex items-center">
+                        <div class="md:hidden flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xl">K</div>
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">KubeAI</h1>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex items-center md:ml-6">
+                        <button class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
+                            <span class="sr-only">View notifications</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+                        <div class="ml-3 relative">
+                            <div>
+                                <button type="button" class="max-w-xs bg-white dark:bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primaryDark">
+                                    <span class="sr-only">Open user menu</span>
+                                    <div class="h-8 w-8 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center text-white font-medium">
+                                        A
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile sidebar -->
+            <div id="mobileSidebar" class="md:hidden fixed inset-0 flex z-40 hidden">
+                <div class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gray-50 dark:bg-dark-200">
+                    <div class="absolute top-0 right-0 -mr-12 pt-2">
+                        <button id="closeSidebarButton" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                        <div class="flex-shrink-0 flex items-center px-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xl">K</div>
+                                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">KubeAI</h1>
+                            </div>
+                        </div>
+                        <nav class="mt-5 px-2 space-y-1">
+                            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-white bg-primaryDark rounded-md">
+                                <svg class="mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                Dashboard
+                            </a>
+                            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md">
+                                <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Resources
+                            </a>
+                            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md">
+                                <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Metrics
+                            </a>
+                            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-100 rounded-md">
+                                <svg class="mr-3 h-6 w-6 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Settings
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 w-14"></div>
+            </div>
+            
+            <!-- Page content -->
+            <main class="flex-1 relative overflow-y-auto focus:outline-none">
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h2>
+                    </div>
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                        <div class="py-4">
+                            <!-- Cluster Overview Cards -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pods</p>
+                                            <p id="podCount" class="text-2xl font-semibold text-gray-900 dark:text-white">-</p>
+                                        </div>
+                                        <div class="rounded-md bg-purple-100 dark:bg-opacity-10 p-3 dark:bg-purple-900">
+                                            <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Deployments</p>
+                                            <p id="deploymentCount" class="text-2xl font-semibold text-gray-900 dark:text-white">-</p>
+                                        </div>
+                                        <div class="rounded-md bg-blue-100 dark:bg-opacity-10 p-3 dark:bg-blue-900">
+                                            <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Services</p>
+                                            <p id="serviceCount" class="text-2xl font-semibold text-gray-900 dark:text-white">-</p>
+                                        </div>
+                                        <div class="rounded-md bg-green-100 dark:bg-opacity-10 p-3 dark:bg-green-900">
+                                            <svg class="h-6 w-6 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Nodes</p>
+                                            <p id="nodeCount" class="text-2xl font-semibold text-gray-900 dark:text-white">-</p>
+                                        </div>
+                                        <div class="rounded-md bg-red-100 dark:bg-opacity-10 p-3 dark:bg-red-900">
+                                            <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- System Metrics -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">CPU Usage</h3>
+                                        <span id="cpuUsage" class="text-lg font-semibold text-gray-900 dark:text-white">-</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div id="cpuUsageBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Memory Usage</h3>
+                                        <span id="memoryUsage" class="text-lg font-semibold text-gray-900 dark:text-white">-</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div id="memoryUsageBar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700 card-hover">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Storage Usage</h3>
+                                        <span id="storageUsage" class="text-lg font-semibold text-gray-900 dark:text-white">-</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div id="storageUsageBar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Main Content Sections -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <!-- AI Command Generator -->
+                                <div class="lg:col-span-2 bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Command Generator</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Generate kubectl commands using natural language</p>
+                                    
+                                    <div class="flex flex-col space-y-4">
+                                        <div class="flex flex-col">
+                                            <div class="relative">
+                                                <input type="text" id="commandInput" class="w-full border border-gray-300 dark:border-gray-600 rounded-md pl-3 pr-10 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primaryDark focus:border-transparent dark:bg-dark-200 dark:text-gray-200" placeholder="e.g. Get all pods in the default namespace">
+                                                <button id="generateCommandBtn" class="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-md bg-primaryDark text-white px-3 py-1 text-sm hover:bg-opacity-90 transition-colors focus:outline-none">
+                                                    Generate
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="commandResult" class="hidden">
+                                            <div class="bg-gray-50 dark:bg-dark-200 rounded-md p-3 border border-gray-200 dark:border-gray-700">
+                                                <div class="flex justify-between items-center mb-1">
+                                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Generated Command</h4>
+                                                    <button id="copyCommandBtn" class="text-sm text-primaryDark hover:text-primary-700 focus:outline-none">
+                                                        Copy
+                                                    </button>
+                                                </div>
+                                                <div id="commandOutput" class="font-mono text-sm text-gray-800 dark:text-gray-200 whitespace-normal break-all"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="commandLoading" class="hidden">
+                                            <div class="flex justify-center items-center py-3">
+                                                <div class="loading-dot bg-primaryDark h-2 w-2 rounded-full mx-1"></div>
+                                                <div class="loading-dot bg-primaryDark h-2 w-2 rounded-full mx-1"></div>
+                                                <div class="loading-dot bg-primaryDark h-2 w-2 rounded-full mx-1"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Activity Log -->
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activities</h3>
+                                    <div class="space-y-4 max-h-[400px] overflow-y-auto" id="activitiesList">
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Analysis Section -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                                <!-- Anomaly Detection -->
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">AI Anomaly Detection</h3>
+                                        <button id="refreshAnomalies" class="text-primaryDark hover:text-primary-700 focus:outline-none">
+                                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div id="anomaliesList" class="space-y-3 max-h-[300px] overflow-y-auto">
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Optimization Recommendations -->
+                                <div class="bg-white dark:bg-dark-100 shadow-sm rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">AI Optimization Recommendations</h3>
+                                        <button id="refreshOptimizations" class="text-primaryDark hover:text-primary-700 focus:outline-none">
+                                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div id="optimizationsList" class="space-y-3 max-h-[300px] overflow-y-auto">
+                                        <div class="flex items-center justify-center py-4">
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                            <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Mobile sidebar toggle
+        const sidebarButton = document.getElementById('sidebarButton');
+        const closeSidebarButton = document.getElementById('closeSidebarButton');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        
+        sidebarButton.addEventListener('click', () => {
+            mobileSidebar.classList.remove('hidden');
+        });
+        
+        closeSidebarButton.addEventListener('click', () => {
+            mobileSidebar.classList.add('hidden');
+        });
+        
+        // Command generator
+        const commandInput = document.getElementById('commandInput');
+        const generateCommandBtn = document.getElementById('generateCommandBtn');
+        const commandResult = document.getElementById('commandResult');
+        const commandOutput = document.getElementById('commandOutput');
+        const commandLoading = document.getElementById('commandLoading');
+        const copyCommandBtn = document.getElementById('copyCommandBtn');
+        
+        generateCommandBtn.addEventListener('click', async () => {
+            const prompt = commandInput.value.trim();
+            if (!prompt) return;
+            
+            commandResult.classList.add('hidden');
+            commandLoading.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/api/generate-command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+                
+                const data = await response.json();
+                commandOutput.textContent = data.command;
+                commandResult.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+                commandOutput.textContent = 'Error generating command';
+                commandResult.classList.remove('hidden');
+            } finally {
+                commandLoading.classList.add('hidden');
+            }
+        });
+        
+        copyCommandBtn.addEventListener('click', () => {
+            const textToCopy = commandOutput.textContent;
+            
+            // Use the newer Clipboard API if available
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyCommandBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyCommandBtn.textContent = 'Copy';
+                    }, 2000);
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    copyCommandBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyCommandBtn.textContent = 'Copy';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text:', err);
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        });
+        
+        // Fetch cluster overview data
+        async function fetchClusterOverview() {
+            try {
+                const response = await fetch('/api/cluster-overview');
+                const data = await response.json();
+                
+                // Update counts
+                document.getElementById('podCount').textContent = data.pods;
+                document.getElementById('deploymentCount').textContent = data.deployments;
+                document.getElementById('serviceCount').textContent = data.services;
+                document.getElementById('nodeCount').textContent = data.nodes;
+                
+                // Update usage bars
+                document.getElementById('cpuUsage').textContent = `${data.cpu_usage}%`;
+                document.getElementById('memoryUsage').textContent = `${data.memory_usage}%`;
+                document.getElementById('storageUsage').textContent = `${data.storage_usage}%`;
+                
+                document.getElementById('cpuUsageBar').style.width = `${data.cpu_usage}%`;
+                document.getElementById('memoryUsageBar').style.width = `${data.memory_usage}%`;
+                document.getElementById('storageUsageBar').style.width = `${data.storage_usage}%`;
+            } catch (error) {
+                console.error('Error fetching cluster overview:', error);
+            }
+        }
+        
+        // Fetch activities
+        async function fetchActivities() {
+            try {
+                const response = await fetch('/api/activities');
+                const activities = await response.json();
+                
+                const activitiesList = document.getElementById('activitiesList');
+                activitiesList.innerHTML = '';
+                
+                activities.forEach(activity => {
+                    const date = new Date(activity.timestamp);
+                    const formattedDate = date.toLocaleString();
+                    
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'border-l-2 border-gray-200 dark:border-gray-700 pl-3 py-1';
+                    
+                    let actionClass = 'text-blue-600 dark:text-blue-400';
+                    if (activity.action === 'Created') {
+                        actionClass = 'text-green-600 dark:text-green-400';
+                    } else if (activity.action === 'Deleted' || activity.action === 'Restarted') {
+                        actionClass = 'text-red-600 dark:text-red-400';
+                    } else if (activity.action === 'Updated' || activity.action === 'Scaled') {
+                        actionClass = 'text-orange-600 dark:text-orange-400';
+                    }
+                    
+                    activityItem.innerHTML = `
+                        <div class="flex flex-col">
+                            <div class="flex items-start">
+                                <span class="font-medium ${actionClass}">${activity.action}</span>
+                                <span class="mx-1 text-gray-600 dark:text-gray-400">-</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">${activity.component}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${activity.description}</p>
+                            <div class="flex items-center text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                <span>${formattedDate}</span>
+                                <span class="mx-1">•</span>
+                                <span>${activity.user}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    activitiesList.appendChild(activityItem);
+                });
+            } catch (error) {
+                console.error('Error fetching activities:', error);
+                const activitiesList = document.getElementById('activitiesList');
+                activitiesList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Failed to load activities</p>';
+            }
+        }
+        
+        // Fetch anomalies
+        async function fetchAnomalies() {
+            try {
+                const anomaliesList = document.getElementById('anomaliesList');
+                anomaliesList.innerHTML = `
+                    <div class="flex items-center justify-center py-4">
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                    </div>
+                `;
+                
+                const response = await fetch('/api/anomalies');
+                const anomalies = await response.json();
+                
+                anomaliesList.innerHTML = '';
+                
+                anomalies.forEach(anomaly => {
+                    const severityClass = 
+                        anomaly.severity === 'High' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:bg-opacity-20 dark:text-red-400' :
+                        anomaly.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-20 dark:text-yellow-400' :
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-20 dark:text-blue-400';
+                    
+                    const anomalyItem = document.createElement('div');
+                    anomalyItem.className = 'p-3 bg-gray-50 dark:bg-dark-200 rounded-md border border-gray-200 dark:border-gray-700';
+                    
+                    anomalyItem.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-medium text-gray-900 dark:text-white">${anomaly.component}</h4>
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${severityClass}">${anomaly.severity}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${anomaly.issue}</p>
+                        <div class="flex items-center">
+                            <svg class="h-4 w-4 text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">${anomaly.recommendation}</span>
+                        </div>
+                    `;
+                    
+                    anomaliesList.appendChild(anomalyItem);
+                });
+            } catch (error) {
+                console.error('Error fetching anomalies:', error);
+                const anomaliesList = document.getElementById('anomaliesList');
+                anomaliesList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Failed to load anomalies</p>';
+            }
+        }
+        
+        // Fetch optimization recommendations
+        async function fetchOptimizations() {
+            try {
+                const optimizationsList = document.getElementById('optimizationsList');
+                optimizationsList.innerHTML = `
+                    <div class="flex items-center justify-center py-4">
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                        <div class="loading-dot bg-gray-400 dark:bg-gray-600 h-2 w-2 rounded-full mx-1"></div>
+                    </div>
+                `;
+                
+                const response = await fetch('/api/optimization');
+                const optimizations = await response.json();
+                
+                optimizationsList.innerHTML = '';
+                
+                optimizations.forEach(opt => {
+                    const impactClass = 
+                        opt.impact === 'High' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-20 dark:text-green-400' :
+                        opt.impact === 'Medium' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-20 dark:text-blue-400' :
+                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:bg-opacity-40 dark:text-gray-400';
+                    
+                    const optItem = document.createElement('div');
+                    optItem.className = 'p-3 bg-gray-50 dark:bg-dark-200 rounded-md border border-gray-200 dark:border-gray-700';
+                    
+                    optItem.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-medium text-gray-900 dark:text-white">${opt.title}</h4>
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full ${impactClass}">${opt.impact} Impact</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${opt.description}</p>
+                        <div class="flex items-start">
+                            <svg class="h-4 w-4 text-gray-400 mr-1 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">${opt.implementation}</span>
+                        </div>
+                    `;
+                    
+                    optimizationsList.appendChild(optItem);
+                });
+            } catch (error) {
+                console.error('Error fetching optimizations:', error);
+                const optimizationsList = document.getElementById('optimizationsList');
+                optimizationsList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Failed to load optimization recommendations</p>';
+            }
+        }
+        
+        // Add event listeners for refresh buttons
+        document.getElementById('refreshAnomalies').addEventListener('click', fetchAnomalies);
+        document.getElementById('refreshOptimizations').addEventListener('click', fetchOptimizations);
+        
+        // Initial data fetch
+        fetchClusterOverview();
+        fetchActivities();
+        fetchAnomalies();
+        fetchOptimizations();
+        
+        // Add Enter key handler for command input
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateCommandBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
